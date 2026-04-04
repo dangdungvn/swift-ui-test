@@ -76,43 +76,55 @@ struct PlaylistDetailView: View {
     }
 
     private var heroSection: some View {
-        VStack(spacing: 16) {
-            ZStack(alignment: .topLeading) {
-                MediaArtworkView(url: viewModel.displayArtworkURL, cornerRadius: 30)
-                    .aspectRatio(1, contentMode: .fill)
+        GlassEffectContainer(spacing: 16) {
+            VStack(spacing: 16) {
+                ZStack(alignment: .topLeading) {
+                    MediaArtworkView(url: viewModel.displayArtworkURL, cornerRadius: 30)
+                        .aspectRatio(1, contentMode: .fill)
+                        .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 30))
 
-                GlassBadge("Playlist", systemImage: "music.note.list", tint: Color(red: 0.33, green: 0.18, blue: 0.42).opacity(0.45))
-                    .padding(14)
-            }
-            .frame(width: 260, height: 260)
-            .shadow(color: .purple.opacity(0.3), radius: 30, y: 15)
-
-            VStack(spacing: 6) {
-                Text(viewModel.displayTitle)
-                    .font(.title2.bold())
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-
-                Text(viewModel.displayArtistsText)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-
-                if let genreLabel = viewModel.genreLabel, !genreLabel.isEmpty {
-                    Text(genreLabel)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.white.opacity(0.45))
-                        .padding(.top, 2)
-                } else {
-                    Text("Duoc chon loc cho bua nghe hien tai")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.45))
-                        .padding(.top, 2)
+                    GlassBadge("Playlist", systemImage: "music.note.list", tint: Color(red: 0.33, green: 0.18, blue: 0.42).opacity(0.45))
+                        .padding(14)
                 }
+                .frame(width: 260, height: 260)
+                .shadow(color: .purple.opacity(0.3), radius: 30, y: 15)
+
+                GlassPanel(cornerRadius: 26) {
+                    VStack(spacing: 6) {
+                        Text(viewModel.displayTitle)
+                            .font(.title2.bold())
+                            .foregroundStyle(.white)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+
+                        Text(viewModel.displayArtistsText)
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(2)
+
+                        if let genreLabel = viewModel.genreLabel, !genreLabel.isEmpty {
+                            Text(genreLabel)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.white.opacity(0.82))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .glassEffect(.regular.tint(.white.opacity(0.06)).interactive(), in: .capsule)
+                                .padding(.top, 4)
+                        } else {
+                            Text("Duoc chon loc cho bua nghe hien tai")
+                                .font(.caption)
+                                .foregroundStyle(.white.opacity(0.82))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .glassEffect(.regular.tint(.white.opacity(0.06)).interactive(), in: .capsule)
+                                .padding(.top, 4)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
         }
         .padding(.top, 20)
     }
@@ -293,6 +305,8 @@ struct PlaylistSongRow: View {
             Image(systemName: "ellipsis")
                 .font(.body.weight(.semibold))
                 .foregroundStyle(.white.opacity(0.45))
+                .frame(width: 30, height: 30)
+                .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .circle)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)

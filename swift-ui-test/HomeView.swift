@@ -148,54 +148,6 @@ struct QuickPlayCard: View {
     }
 }
 
-// MARK: - Banner Section
-
-struct BannerSectionView: View {
-    let banners: [Banner]
-
-    var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            GlassEffectContainer(spacing: 12) {
-                LazyHStack(spacing: 12) {
-                    ForEach(banners) { banner in
-                        ZStack(alignment: .bottomLeading) {
-                            MediaArtworkView(url: banner.banner, cornerRadius: 24)
-                                .overlay {
-                                    LinearGradient(
-                                        colors: [.clear, .black.opacity(0.2), .black.opacity(0.72)],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                if let title = banner.title, !title.isEmpty {
-                                    Text(title)
-                                        .font(.headline.weight(.semibold))
-                                        .foregroundStyle(.white)
-                                        .lineLimit(2)
-                                }
-
-                                if let description = banner.description, !description.isEmpty {
-                                    Text(description)
-                                        .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.72))
-                                        .lineLimit(2)
-                                }
-                            }
-                            .padding(18)
-                        }
-                        .frame(height: 180)
-                        .containerRelativeFrame(.horizontal) { length, _ in length * 0.88 }
-                    }
-                }
-                .scrollTargetLayout()
-                .padding(.horizontal, 20)
-            }
-        }
-        .scrollTargetBehavior(.viewAligned)
-    }
-}
 
 // MARK: - Playlist Section (Horizontal Slider)
 
@@ -248,8 +200,13 @@ struct HomePlaylistCard: View {
                     .lineLimit(1)
             }
             .padding(.top, 8)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+            .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
             .frame(width: 160, alignment: .leading)
         }
+        .padding(8)
+        .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 28))
     }
 }
 

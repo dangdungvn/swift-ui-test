@@ -64,21 +64,27 @@ struct AppScreenHeader: View {
     let subtitle: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if let eyebrow, !eyebrow.isEmpty {
-                Text(eyebrow.uppercased())
-                    .font(.caption.weight(.semibold))
-                    .kerning(1.2)
-                    .foregroundStyle(.white.opacity(0.55))
+        GlassPanel(cornerRadius: 28) {
+            VStack(alignment: .leading, spacing: 10) {
+                if let eyebrow, !eyebrow.isEmpty {
+                    Text(eyebrow.uppercased())
+                        .font(.caption.weight(.semibold))
+                        .kerning(1.2)
+                        .foregroundStyle(.white.opacity(0.78))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .glassEffect(.regular.tint(.white.opacity(0.08)).interactive(), in: .capsule)
+                }
+
+                Text(title)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.white)
+
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.74))
             }
-
-            Text(title)
-                .font(.largeTitle.bold())
-                .foregroundStyle(.white)
-
-            Text(subtitle)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.68))
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)
@@ -98,33 +104,37 @@ struct AppStatusView: View {
     let style: Style
 
     var body: some View {
-        VStack(spacing: 18) {
-            if case .loading = style {
-                ProgressView()
-                    .controlSize(.large)
-                    .tint(.white)
-                    .padding(.bottom, 2)
-            } else {
-                Image(systemName: systemImage)
-                    .font(.system(size: 42, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.8))
-                    .frame(width: 72, height: 72)
-                    .glassEffect(.regular.tint(.white.opacity(0.08)), in: .circle)
-            }
+        GlassPanel(cornerRadius: 30) {
+            VStack(spacing: 18) {
+                if case .loading = style {
+                    ProgressView()
+                        .controlSize(.large)
+                        .tint(.white)
+                        .padding(.bottom, 2)
+                        .frame(width: 72, height: 72)
+                        .glassEffect(.regular.tint(.white.opacity(0.06)), in: .circle)
+                } else {
+                    Image(systemName: systemImage)
+                        .font(.system(size: 42, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.8))
+                        .frame(width: 72, height: 72)
+                        .glassEffect(.regular.tint(.white.opacity(0.08)), in: .circle)
+                }
 
-            VStack(spacing: 6) {
-                Text(title)
-                    .font(.title3.bold())
-                    .foregroundStyle(.white)
-                Text(message)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.62))
-                    .multilineTextAlignment(.center)
-            }
+                VStack(spacing: 6) {
+                    Text(title)
+                        .font(.title3.bold())
+                        .foregroundStyle(.white)
+                    Text(message)
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.62))
+                        .multilineTextAlignment(.center)
+                }
 
-            if case .error(let actionTitle, let action) = style {
-                Button(actionTitle, action: action)
-                    .buttonStyle(.glassProminent)
+                if case .error(let actionTitle, let action) = style {
+                    Button(actionTitle, action: action)
+                        .buttonStyle(.glassProminent)
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -145,7 +155,10 @@ struct AppSectionHeader: View {
             if let detail, !detail.isEmpty {
                 Text(detail)
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(.white.opacity(0.82))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .glassEffect(.regular.tint(.white.opacity(0.06)).interactive(), in: .capsule)
             }
         }
         .padding(.horizontal, 20)
@@ -175,7 +188,7 @@ struct GlassBadge: View {
         .foregroundStyle(.white)
         .padding(.horizontal, 9)
         .padding(.vertical, 6)
-        .glassEffect(.regular.tint(tint), in: .capsule)
+        .glassEffect(.regular.tint(tint).interactive(), in: .capsule)
     }
 }
 
@@ -240,6 +253,7 @@ struct MediaArtworkView: View {
                 ProgressView()
                     .tint(.white.opacity(0.45))
             }
+            .glassEffect(.regular.tint(.white.opacity(0.05)), in: .rect(cornerRadius: cornerRadius))
     }
 
     private var fallbackView: some View {
@@ -250,6 +264,7 @@ struct MediaArtworkView: View {
                     .font(.title2)
                     .foregroundStyle(.white.opacity(0.35))
             }
+            .glassEffect(.regular.tint(.white.opacity(0.05)), in: .rect(cornerRadius: cornerRadius))
     }
 }
 
@@ -265,6 +280,6 @@ struct GlassPanel<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .glassEffect(.regular.tint(.white.opacity(0.05)), in: .rect(cornerRadius: cornerRadius))
+            .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: cornerRadius))
     }
 }

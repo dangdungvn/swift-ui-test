@@ -141,7 +141,10 @@ struct Top100FeaturedCard: View {
                 .padding(18)
             }
             .frame(width: 280, height: 280)
+            .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 32))
         }
+        .padding(8)
+        .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 36))
     }
 }
 
@@ -199,6 +202,11 @@ struct Top100GridCard: View {
                     .lineLimit(1)
             }
             .padding(.top, 8)
+            .padding(.horizontal, 12)
+            .padding(.bottom, 12)
+            .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
         }
+        .padding(8)
+        .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 28))
     }
 }
