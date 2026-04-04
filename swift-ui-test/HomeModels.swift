@@ -1,12 +1,6 @@
 import Foundation
 
-// MARK: - Home API Response
-
-struct HomeAPIResponse: Codable {
-    let err: Int
-    let msg: String
-    let data: HomeData
-}
+// MARK: - Home Data
 
 struct HomeData: Codable {
     let items: [HomeSection]

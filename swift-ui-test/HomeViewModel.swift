@@ -9,8 +9,6 @@ class HomeViewModel {
     var currentPage = 1
     var hasMore = true
 
-    private let baseURL = "https://real-apparently-wombat.ngrok-free.app/api/home?page="
-
     func fetchHome() async {
         isLoading = true
         errorMessage = nil
@@ -46,24 +44,13 @@ class HomeViewModel {
     }
 
     private func loadPage(_ page: Int) async throws -> [HomeSection] {
-        guard let url = URL(string: "\(baseURL)\(page)") else {
-            throw URLError(.badURL)
-        }
+        let homeData: HomeData = try await APIClient.shared.fetch(.home(page: page))
 
-        var request = URLRequest(url: url)
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let response = try JSONDecoder().decode(HomeAPIResponse.self, from: data)
-
-        if response.err != 0 {
-            throw NSError(domain: "", code: response.err, userInfo: [NSLocalizedDescriptionKey: response.msg])
-        }
-
-        if let more = response.data.hasMore {
+        if let more = homeData.hasMore {
             hasMore = more
         }
 
-        return response.data.items.filter { $0.isDisplayable }
+        return homeData.items.filter { $0.isDisplayable }
     }
 
     var displayableSections: [HomeSection] {

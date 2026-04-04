@@ -1,11 +1,5 @@
 import Foundation
 
-struct PlaylistDetailAPIResponse: Codable {
-    let err: Int
-    let msg: String
-    let data: PlaylistDetail
-}
-
 struct PlaylistDetail: Codable, Identifiable {
     let encodeId: String
     let title: String

@@ -105,12 +105,14 @@ struct QuickPlaySectionView: View {
     let items: [QuickPlayItem]
 
     var body: some View {
-        LazyVGrid(
-            columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
-            spacing: 10
-        ) {
-            ForEach(items.prefix(8)) { item in
-                QuickPlayCard(item: item)
+        GlassEffectContainer(spacing: 10) {
+            LazyVGrid(
+                columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)],
+                spacing: 10
+            ) {
+                ForEach(items.prefix(8)) { item in
+                    QuickPlayCard(item: item)
+                }
             }
         }
         .padding(.horizontal, 20)
@@ -153,41 +155,43 @@ struct BannerSectionView: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            LazyHStack(spacing: 12) {
-                ForEach(banners) { banner in
-                    ZStack(alignment: .bottomLeading) {
-                        MediaArtworkView(url: banner.banner, cornerRadius: 24)
-                            .overlay {
-                                LinearGradient(
-                                    colors: [.clear, .black.opacity(0.2), .black.opacity(0.72)],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            }
+            GlassEffectContainer(spacing: 12) {
+                LazyHStack(spacing: 12) {
+                    ForEach(banners) { banner in
+                        ZStack(alignment: .bottomLeading) {
+                            MediaArtworkView(url: banner.banner, cornerRadius: 24)
+                                .overlay {
+                                    LinearGradient(
+                                        colors: [.clear, .black.opacity(0.2), .black.opacity(0.72)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                }
 
-                        VStack(alignment: .leading, spacing: 6) {
-                            if let title = banner.title, !title.isEmpty {
-                                Text(title)
-                                    .font(.headline.weight(.semibold))
-                                    .foregroundStyle(.white)
-                                    .lineLimit(2)
-                            }
+                            VStack(alignment: .leading, spacing: 6) {
+                                if let title = banner.title, !title.isEmpty {
+                                    Text(title)
+                                        .font(.headline.weight(.semibold))
+                                        .foregroundStyle(.white)
+                                        .lineLimit(2)
+                                }
 
-                            if let description = banner.description, !description.isEmpty {
-                                Text(description)
-                                    .font(.caption)
-                                    .foregroundStyle(.white.opacity(0.72))
-                                    .lineLimit(2)
+                                if let description = banner.description, !description.isEmpty {
+                                    Text(description)
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.72))
+                                        .lineLimit(2)
+                                }
                             }
+                            .padding(18)
                         }
-                        .padding(18)
+                        .frame(height: 180)
+                        .containerRelativeFrame(.horizontal) { length, _ in length * 0.88 }
                     }
-                    .frame(height: 180)
-                    .containerRelativeFrame(.horizontal) { length, _ in length * 0.88 }
                 }
+                .scrollTargetLayout()
+                .padding(.horizontal, 20)
             }
-            .scrollTargetLayout()
-            .padding(.horizontal, 20)
         }
         .scrollTargetBehavior(.viewAligned)
     }
@@ -203,15 +207,17 @@ struct HomePlaylistSectionView: View {
             AppSectionHeader(title: section.title, detail: section.link.isEmpty ? nil : "Tat ca")
 
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 14) {
-                    ForEach(section.playlistItems) { playlist in
-                        NavigationLink(value: playlist) {
-                            HomePlaylistCard(playlist: playlist)
+                GlassEffectContainer(spacing: 14) {
+                    LazyHStack(spacing: 14) {
+                        ForEach(section.playlistItems) { playlist in
+                            NavigationLink(value: playlist) {
+                                HomePlaylistCard(playlist: playlist)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
             }
         }
     }
@@ -276,9 +282,11 @@ struct NewReleaseSectionView: View {
             }
             .padding(.horizontal, 20)
 
-            VStack(spacing: 10) {
-                ForEach(currentSongs.prefix(8)) { song in
-                    NewReleaseSongRow(song: song)
+            GlassEffectContainer(spacing: 10) {
+                VStack(spacing: 10) {
+                    ForEach(currentSongs.prefix(8)) { song in
+                        NewReleaseSongRow(song: song)
+                    }
                 }
             }
             .padding(.horizontal, 20)

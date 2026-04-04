@@ -7,7 +7,6 @@ class PlaylistDetailViewModel {
     var errorMessage: String?
 
     let seedPlaylist: Playlist
-    private let baseURL = "https://real-apparently-wombat.ngrok-free.app/api/detailplaylist?id="
 
     init(playlist: Playlist) {
         self.seedPlaylist = playlist
@@ -50,26 +49,12 @@ class PlaylistDetailViewModel {
     }
 
     func fetchDetail() async {
-        guard let url = URL(string: "\(baseURL)\(seedPlaylist.encodeId)") else {
-            errorMessage = "Invalid URL"
-            return
-        }
-
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
 
         do {
-            var request = URLRequest(url: url)
-            request.setValue("application/json", forHTTPHeaderField: "Accept")
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let response = try JSONDecoder().decode(PlaylistDetailAPIResponse.self, from: data)
-
-            if response.err == 0 {
-                detail = response.data
-            } else {
-                errorMessage = response.msg
-            }
+            detail = try await APIClient.shared.fetch(.playlistDetail(id: seedPlaylist.encodeId))
         } catch {
             errorMessage = error.localizedDescription
         }

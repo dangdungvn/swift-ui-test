@@ -39,12 +39,13 @@ struct PlaylistDetailView: View {
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .blur(radius: 60)
                         .opacity(0.4)
                         .scaleEffect(1.3)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
             .ignoresSafeArea()
 
             LinearGradient(
@@ -68,6 +69,7 @@ struct PlaylistDetailView: View {
                 songsSection
                 artistsSection
             }
+            .containerRelativeFrame(.horizontal)
             .padding(.bottom, 100)
         }
         .scrollEdgeEffectStyle(.soft, for: .top)
@@ -96,6 +98,7 @@ struct PlaylistDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.6))
                     .multilineTextAlignment(.center)
+                    .lineLimit(2)
 
                 if let genreLabel = viewModel.genreLabel, !genreLabel.isEmpty {
                     Text(genreLabel)
@@ -212,9 +215,11 @@ struct PlaylistDetailView: View {
                 }
                 .padding(.horizontal, 20)
             } else {
-                LazyVStack(spacing: 10) {
-                    ForEach(Array(viewModel.tracks.enumerated()), id: \.element.id) { index, song in
-                        PlaylistSongRow(song: song, index: index + 1)
+                GlassEffectContainer(spacing: 10) {
+                    LazyVStack(spacing: 10) {
+                        ForEach(Array(viewModel.tracks.enumerated()), id: \.element.id) { index, song in
+                            PlaylistSongRow(song: song, index: index + 1)
+                        }
                     }
                 }
                 .padding(.horizontal, 20)

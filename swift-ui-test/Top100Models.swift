@@ -1,11 +1,5 @@
 import Foundation
 
-struct APIResponse: Codable {
-    let err: Int
-    let msg: String
-    let data: [MusicSection]
-}
-
 struct MusicSection: Codable, Identifiable {
     let sectionType: String
     let viewType: String

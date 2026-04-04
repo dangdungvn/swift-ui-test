@@ -90,15 +90,17 @@ struct Top100SliderSection: View {
             AppSectionHeader(title: section.title, detail: nil)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 16) {
-                    ForEach(section.items) { playlist in
-                        NavigationLink(value: playlist) {
-                            Top100FeaturedCard(playlist: playlist)
+                GlassEffectContainer(spacing: 16) {
+                    LazyHStack(spacing: 16) {
+                        ForEach(section.items) { playlist in
+                            NavigationLink(value: playlist) {
+                                Top100FeaturedCard(playlist: playlist)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
             }
             .scrollTargetBehavior(.viewAligned)
         }
@@ -157,12 +159,14 @@ struct Top100GridSection: View {
         VStack(alignment: .leading, spacing: 16) {
             AppSectionHeader(title: section.title, detail: "Tat ca")
 
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(section.items) { playlist in
-                    NavigationLink(value: playlist) {
-                        Top100GridCard(playlist: playlist)
+            GlassEffectContainer(spacing: 16) {
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(section.items) { playlist in
+                        NavigationLink(value: playlist) {
+                            Top100GridCard(playlist: playlist)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 20)
