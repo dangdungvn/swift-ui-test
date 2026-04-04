@@ -1,61 +1,70 @@
-//
-//  ContentView.swift
-//  swift-ui-test
-//
-//  Created by Phan Văn Tùng on 28/3/26.
-//
-
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var selectedTab = 0
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        TabView(selection: $selectedTab) {
+            Tab("Kham pha", systemImage: "music.note.house.fill", value: 0) {
+                HomeView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            Tab("Top 100", systemImage: "chart.bar.fill", value: 1) {
+                Top100View()
             }
-        } detail: {
-            Text("Select an item")
+            Tab("Tim kiem", systemImage: "magnifyingglass", value: 2) {
+                SearchPlaceholderView()
+            }
+            Tab("Thu vien", systemImage: "square.stack.fill", value: 3) {
+                LibraryPlaceholderView()
+            }
+        }
+        .tint(.white)
+        .tabBarMinimizeBehavior(.onScrollDown)
+        .toolbarBackgroundVisibility(.visible, for: .tabBar)
+    }
+}
+
+// MARK: - Placeholder Tabs
+
+struct SearchPlaceholderView: View {
+    var body: some View {
+        ZStack {
+            AppBackdrop()
+            AppStatusView(
+                systemImage: "magnifyingglass",
+                title: "Tim kiem",
+                message: "Khu vuc nay co the dung lai de tao search experience sau.",
+                style: .placeholder
+            )
         }
     }
+}
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
+struct LibraryPlaceholderView: View {
+    var body: some View {
+        ZStack {
+            AppBackdrop(colors: AppBackdrop.top100Colors)
+            AppStatusView(
+                systemImage: "square.stack.fill",
+                title: "Thu vien",
+                message: "Noi tap trung playlist da luu, history va nhac cua ban.",
+                style: .placeholder
+            )
         }
     }
+}
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
+// MARK: - Make Playlist Hashable for NavigationLink
+
+extension Playlist: Hashable {
+    static func == (lhs: Playlist, rhs: Playlist) -> Bool {
+        lhs.encodeId == rhs.encodeId
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(encodeId)
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
