@@ -139,14 +139,10 @@ struct NewReleaseSong: Codable, Identifiable {
 
 // MARK: - Helper for safe array decoding
 
-struct FailableDecodable<T: Codable>: Codable {
+struct FailableDecodable<T: Decodable>: Decodable {
     let value: T?
 
     init(from decoder: Decoder) throws {
         value = try? T(from: decoder)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        try value?.encode(to: encoder)
     }
 }

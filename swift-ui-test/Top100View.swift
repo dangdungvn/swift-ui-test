@@ -26,6 +26,9 @@ struct Top100View: View {
             .navigationDestination(for: Playlist.self) { playlist in
                 PlaylistDetailView(playlist: playlist)
             }
+            .navigationDestination(for: ArtistRoute.self) { route in
+                ArtistView(artistName: route.name)
+            }
         }
     }
 

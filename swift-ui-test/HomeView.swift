@@ -24,6 +24,9 @@ struct HomeView: View {
             .navigationDestination(for: Playlist.self) { playlist in
                 PlaylistDetailView(playlist: playlist)
             }
+            .navigationDestination(for: ArtistRoute.self) { route in
+                ArtistView(artistName: route.name)
+            }
         }
     }
 
@@ -85,8 +88,6 @@ struct HomeSectionRouter: View {
         switch section.sectionType {
         case "quickPlay":
             QuickPlaySectionView(items: section.quickPlayItems)
-        case "banner":
-            BannerSectionView(banners: section.bannerItems)
         case "playlist":
             HomePlaylistSectionView(section: section)
         case "newRelease":
@@ -276,38 +277,66 @@ struct TabPill: View {
 
 struct NewReleaseSongRow: View {
     let song: NewReleaseSong
+    var audioPlayer = AudioPlayerManager.shared
+
+    private var isCurrentSong: Bool {
+        audioPlayer.currentSong?.id == song.encodeId
+    }
 
     var body: some View {
-        HStack(spacing: 12) {
-            MediaArtworkView(url: song.thumbnailM ?? song.thumbnail ?? "", cornerRadius: 12)
-                .frame(width: 50, height: 50)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(song.title)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-                Text(song.artistsNames ?? "")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.56))
-                    .lineLimit(1)
-
-                if let releaseDate = song.releaseDate {
-                    Text(releaseDateText(from: releaseDate))
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.4))
-                }
+        Button {
+            Task {
+                await audioPlayer.play(song: PlayableSong(
+                    id: song.encodeId,
+                    title: song.title,
+                    artistsNames: song.artistsNames ?? "",
+                    thumbnail: song.thumbnailM ?? song.thumbnail ?? ""
+                ))
             }
+        } label: {
+            HStack(spacing: 12) {
+                ZStack {
+                    MediaArtworkView(url: song.thumbnailM ?? song.thumbnail ?? "", cornerRadius: 12)
+                        .frame(width: 50, height: 50)
 
-            Spacer()
+                    if isCurrentSong {
+                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.caption.bold())
+                            .foregroundStyle(.white)
+                            .frame(width: 50, height: 50)
+                            .background(.black.opacity(0.4))
+                            .clipShape(.rect(cornerRadius: 12))
+                    }
+                }
 
-            Image(systemName: "play.circle.fill")
-                .font(.title2)
-                .foregroundStyle(.white.opacity(0.4))
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(song.title)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(isCurrentSong ? .purple : .white)
+                        .lineLimit(1)
+                    Text(song.artistsNames ?? "")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.56))
+                        .lineLimit(1)
+
+                    if let releaseDate = song.releaseDate {
+                        Text(releaseDateText(from: releaseDate))
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.4))
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: isCurrentSong && audioPlayer.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.white.opacity(isCurrentSong ? 0.8 : 0.4))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .glassEffect(.regular.tint(.white.opacity(0.05)), in: .rect(cornerRadius: 18))
+        .buttonStyle(.plain)
     }
 
     private func releaseDateText(from timestamp: Int) -> String {

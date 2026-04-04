@@ -39,12 +39,24 @@ enum APIEndpoint {
     case home(page: Int)
     case top100
     case playlistDetail(id: String)
+    case search(keyword: String)
+    case artist(name: String)
+    case artistSong(id: String, page: Int, count: Int)
+    case song(id: String)
+    case infoSong(id: String)
+    case lyric(id: String)
 
     var path: String {
         switch self {
         case .home: return "/api/home"
         case .top100: return "/api/top100"
         case .playlistDetail: return "/api/detailplaylist"
+        case .search: return "/api/search"
+        case .artist: return "/api/artist"
+        case .artistSong: return "/api/artistsong"
+        case .song: return "/api/song"
+        case .infoSong: return "/api/infosong"
+        case .lyric: return "/api/lyric"
         }
     }
 
@@ -55,6 +67,22 @@ enum APIEndpoint {
         case .top100:
             return []
         case .playlistDetail(let id):
+            return [URLQueryItem(name: "id", value: id)]
+        case .search(let keyword):
+            return [URLQueryItem(name: "keyword", value: keyword)]
+        case .artist(let name):
+            return [URLQueryItem(name: "name", value: name)]
+        case .artistSong(let id, let page, let count):
+            return [
+                URLQueryItem(name: "id", value: id),
+                URLQueryItem(name: "page", value: String(page)),
+                URLQueryItem(name: "count", value: String(count))
+            ]
+        case .song(let id):
+            return [URLQueryItem(name: "id", value: id)]
+        case .infoSong(let id):
+            return [URLQueryItem(name: "id", value: id)]
+        case .lyric(let id):
             return [URLQueryItem(name: "id", value: id)]
         }
     }

@@ -250,7 +250,10 @@ struct PlaylistDetailView: View {
                         GlassEffectContainer(spacing: 12) {
                             LazyHStack(spacing: 12) {
                                 ForEach(artists) { artist in
-                                    ArtistChipView(artist: artist)
+                                    NavigationLink(value: ArtistRoute(name: artist.alias ?? artist.name)) {
+                                        ArtistChipView(artist: artist)
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                             .padding(.horizontal, 20)
@@ -265,52 +268,80 @@ struct PlaylistDetailView: View {
 struct PlaylistSongRow: View {
     let song: PlaylistSong
     let index: Int
+    var audioPlayer = AudioPlayerManager.shared
+
+    private var isCurrentSong: Bool {
+        audioPlayer.currentSong?.id == song.encodeId
+    }
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(String(format: "%02d", index))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.45))
-                .frame(width: 26, alignment: .leading)
+        Button {
+            Task {
+                await audioPlayer.play(song: PlayableSong(
+                    id: song.encodeId,
+                    title: song.title,
+                    artistsNames: song.artistsNames,
+                    thumbnail: song.thumbnailM ?? song.thumbnail ?? ""
+                ))
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Text(String(format: "%02d", index))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.45))
+                    .frame(width: 26, alignment: .leading)
 
-            MediaArtworkView(url: song.thumbnailM ?? song.thumbnail ?? "", cornerRadius: 12)
-                .frame(width: 52, height: 52)
+                ZStack {
+                    MediaArtworkView(url: song.thumbnailM ?? song.thumbnail ?? "", cornerRadius: 12)
+                        .frame(width: 52, height: 52)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(song.title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .lineLimit(1)
-
-                Text(song.artistsNames)
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.58))
-                    .lineLimit(1)
-
-                HStack(spacing: 8) {
-                    if let duration = song.duration {
-                        Text(formatDuration(duration))
-                    }
-
-                    if let releaseDate = song.releaseDate {
-                        Text(releaseDateText(from: releaseDate))
+                    if isCurrentSong {
+                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.caption.bold())
+                            .foregroundStyle(.white)
+                            .frame(width: 52, height: 52)
+                            .background(.black.opacity(0.4))
+                            .clipShape(.rect(cornerRadius: 12))
                     }
                 }
-                .font(.caption2)
-                .foregroundStyle(.white.opacity(0.38))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(song.title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(isCurrentSong ? .purple : .white)
+                        .lineLimit(1)
+
+                    Text(song.artistsNames)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.58))
+                        .lineLimit(1)
+
+                    HStack(spacing: 8) {
+                        if let duration = song.duration {
+                            Text(formatDuration(duration))
+                        }
+
+                        if let releaseDate = song.releaseDate {
+                            Text(releaseDateText(from: releaseDate))
+                        }
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.38))
+                }
+
+                Spacer()
+
+                Image(systemName: "ellipsis")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.45))
+                    .frame(width: 30, height: 30)
+                    .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .circle)
             }
-
-            Spacer()
-
-            Image(systemName: "ellipsis")
-                .font(.body.weight(.semibold))
-                .foregroundStyle(.white.opacity(0.45))
-                .frame(width: 30, height: 30)
-                .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .circle)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .glassEffect(.regular.tint(.white.opacity(0.05)), in: .rect(cornerRadius: 18))
+        .buttonStyle(.plain)
     }
 
     private func formatDuration(_ seconds: Int) -> String {
