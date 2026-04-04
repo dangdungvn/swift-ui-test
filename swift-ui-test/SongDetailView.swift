@@ -283,9 +283,9 @@ struct SongDetailView: View {
     // MARK: - Lyrics Content
 
     private var lyricsContent: some View {
-        VStack(spacing: 12) {
+        Group {
             if hasLyrics {
-                GlassEffectContainer(spacing: 6) {
+                VStack(spacing: 12) {
                     HStack(spacing: 10) {
                         MediaArtworkView(url: audioPlayer.currentSong?.thumbnail ?? "", cornerRadius: 12)
                             .matchedGeometryEffect(id: "song-artwork", in: heroNamespace)
@@ -314,26 +314,24 @@ struct SongDetailView: View {
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .padding(.horizontal, 14)
-                    }
-                .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 24))
-            }
 
-            if hasLyrics {
-                SyncedLyricsView(
-                    lines: lyricLines,
-                    currentTimeMs: lyricTimeMs,
-                    isPlaying: audioPlayer.isPlaying,
-                    onTapLine: { line in
-                        audioPlayer.seek(to: Double(line.startTime) / 1000.0)
-                    }
-                )
-                .padding(.horizontal, 10)
-                .padding(.top, 10)
-                .padding(.bottom, 6)
+                    SyncedLyricsView(
+                        lines: lyricLines,
+                        currentTimeMs: lyricTimeMs,
+                        isPlaying: audioPlayer.isPlaying,
+                        onTapLine: { line in
+                            audioPlayer.seek(to: Double(line.startTime) / 1000.0)
+                        }
+                    )
+                    .padding(.horizontal, 6)
+                    .padding(.bottom, 6)
+                }
+                .padding(.top, 8)
+                .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 28))
+                .padding(.horizontal, 12)
             } else {
-                Spacer()
                 VStack(spacing: 14) {
+                    Spacer()
                     Image(systemName: "text.quote")
                         .font(.system(size: 36))
                         .foregroundStyle(.white.opacity(0.25))
@@ -343,8 +341,10 @@ struct SongDetailView: View {
                     Text("Khong co loi bai hat")
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.4))
+                    Spacer()
                 }
-                Spacer()
+                .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 28))
+                .padding(.horizontal, 12)
             }
         }
         .padding(.horizontal, 4)
