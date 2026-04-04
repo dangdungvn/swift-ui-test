@@ -194,6 +194,7 @@ struct SearchArtistCard: View {
         .frame(width: 100)
         .padding(.vertical, 12)
         .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 20))
+        .contentShape(.rect(cornerRadius: 20))
     }
 
     private func formatFollowers(_ count: Int) -> String {
@@ -265,6 +266,7 @@ struct SearchSongRow: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
+            .contentShape(.rect(cornerRadius: 18))
         }
         .buttonStyle(.plain)
     }
@@ -311,6 +313,7 @@ struct SearchVideoCard: View {
         .frame(width: 220, alignment: .leading)
         .padding(8)
         .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 24))
+        .contentShape(.rect(cornerRadius: 24))
     }
 }
 

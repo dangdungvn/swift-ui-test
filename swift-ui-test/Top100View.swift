@@ -148,6 +148,7 @@ struct Top100FeaturedCard: View {
         }
         .padding(8)
         .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 36))
+        .contentShape(.rect(cornerRadius: 36))
     }
 }
 
@@ -211,5 +212,6 @@ struct Top100GridCard: View {
         }
         .padding(8)
         .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 28))
+        .contentShape(.rect(cornerRadius: 28))
     }
 }

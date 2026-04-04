@@ -101,7 +101,9 @@ struct LyricLine: Identifiable, Equatable {
 
     init(sentence: LyricSentence) {
         let words = sentence.words
-        self.text = words.map(\.data).joined()
+        self.text = words
+            .map { $0.data.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .joined(separator: " ")
             .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
         self.startTime = words.map(\.startTime).min() ?? 0

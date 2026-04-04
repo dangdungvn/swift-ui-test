@@ -382,6 +382,7 @@ struct ArtistSongRow: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
+            .contentShape(.rect(cornerRadius: 18))
         }
         .buttonStyle(.plain)
     }

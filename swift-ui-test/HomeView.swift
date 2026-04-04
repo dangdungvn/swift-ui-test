@@ -208,6 +208,7 @@ struct HomePlaylistCard: View {
         }
         .padding(8)
         .glassEffect(.regular.tint(.white.opacity(0.04)).interactive(), in: .rect(cornerRadius: 28))
+        .contentShape(.rect(cornerRadius: 28))
     }
 }
 
@@ -265,6 +266,7 @@ struct TabPill: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
+                .contentShape(Capsule())
         }
         .glassEffect(
             isSelected
@@ -335,6 +337,7 @@ struct NewReleaseSongRow: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
+            .contentShape(.rect(cornerRadius: 18))
         }
         .buttonStyle(.plain)
     }

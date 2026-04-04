@@ -340,6 +340,7 @@ struct PlaylistSongRow: View {
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
             .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 18))
+            .contentShape(.rect(cornerRadius: 18))
         }
         .buttonStyle(.plain)
     }
@@ -382,6 +383,7 @@ struct ArtistChipView: View {
         .padding(.leading, 4)
         .padding(.vertical, 4)
         .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .capsule)
+        .contentShape(Capsule())
     }
 
     private func formatFollowers(_ count: Int) -> String {
