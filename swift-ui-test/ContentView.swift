@@ -80,20 +80,12 @@ struct NowPlayingBar: View {
                 Button {
                     audioPlayer.togglePlayPause()
                 } label: {
-                    if audioPlayer.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                            .scaleEffect(0.8)
-                            .frame(width: 28, height: 28)
-                    } else {
-                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 28, height: 28)
-                    }
+                    Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 28, height: 28)
                 }
                 .buttonStyle(.plain)
-                .disabled(audioPlayer.isLoading)
 
                 Button {
                     audioPlayer.stop()

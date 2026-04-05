@@ -11,7 +11,7 @@ struct SongDetailView: View {
     @State private var contentMode: ContentMode = .artwork
     @State private var isDragging = false
     @State private var dragProgress: Double = 0
-    private let lyricDelayMs = 260
+    private let lyricDelayMs = 140
 
     private var lyricLines: [LyricLine] {
         audioPlayer.currentLyric?.sentences?.map { LyricLine(sentence: $0) } ?? []
@@ -226,7 +226,7 @@ struct SongDetailView: View {
                 MediaArtworkView(url: audioPlayer.currentSong?.thumbnail ?? "", cornerRadius: 28)
                     .matchedGeometryEffect(id: "song-artwork", in: heroNamespace)
                     .aspectRatio(1, contentMode: .fill)
-                    .frame(maxWidth: UIScreen.main.bounds.width - 72)
+                    .frame(maxWidth: .infinity)
                     .shadow(color: .black.opacity(0.5), radius: 40, y: 20)
                     .shadow(color: .purple.opacity(0.15), radius: 30, y: 10)
                     .glassEffect(.regular.tint(.white.opacity(0.03)), in: .rect(cornerRadius: 28))
@@ -285,35 +285,35 @@ struct SongDetailView: View {
     private var lyricsContent: some View {
         Group {
             if hasLyrics {
-                VStack(spacing: 12) {
-                    HStack(spacing: 10) {
-                        MediaArtworkView(url: audioPlayer.currentSong?.thumbnail ?? "", cornerRadius: 12)
+                VStack(spacing: 6) {
+                    HStack(spacing: 7) {
+                        MediaArtworkView(url: audioPlayer.currentSong?.thumbnail ?? "", cornerRadius: 9)
                             .matchedGeometryEffect(id: "song-artwork", in: heroNamespace)
-                            .frame(width: 50, height: 50)
+                            .frame(width: 40, height: 40)
 
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 0) {
                             Text(audioPlayer.currentSong?.title ?? "")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(.white.opacity(0.95))
                                 .lineLimit(1)
 
                             Text(audioPlayer.currentSong?.artistsNames ?? "")
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundStyle(.white.opacity(0.58))
                                 .lineLimit(1)
                         }
 
-                        Spacer()
+                        Spacer(minLength: 8)
 
                         Text("LIVE")
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(.white.opacity(0.85))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
+                            .foregroundStyle(.white.opacity(0.82))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
                             .glassEffect(.regular.tint(.white.opacity(0.08)).interactive(), in: .capsule)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
 
                     SyncedLyricsView(
                         lines: lyricLines,
@@ -323,12 +323,12 @@ struct SongDetailView: View {
                             audioPlayer.seek(to: Double(line.startTime) / 1000.0)
                         }
                     )
-                    .padding(.horizontal, 6)
-                    .padding(.bottom, 6)
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 2)
                 }
-                .padding(.top, 8)
-                .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 28))
-                .padding(.horizontal, 12)
+                .padding(.top, 4)
+                .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 22))
+                .padding(.horizontal, 14)
             } else {
                 VStack(spacing: 14) {
                     Spacer()
@@ -417,23 +417,14 @@ struct SongDetailView: View {
             Button {
                 audioPlayer.togglePlayPause()
             } label: {
-                ZStack {
-                    if audioPlayer.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                            .scaleEffect(1.1)
-                    } else {
-                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 30, weight: .bold))
-                            .foregroundStyle(.white)
-                            .contentTransition(.symbolEffect(.replace))
-                    }
-                }
+                Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundStyle(.white)
+                    .contentTransition(.symbolEffect(.replace))
                 .frame(width: 68, height: 68)
                 .glassEffect(.regular.tint(.white.opacity(0.1)).interactive(), in: .circle)
             }
             .buttonStyle(.plain)
-            .disabled(audioPlayer.isLoading)
 
             Button {} label: {
                 Image(systemName: "forward.fill")
@@ -583,41 +574,35 @@ struct SyncedLyricsView: View {
     let onTapLine: (LyricLine) -> Void
 
     private var activeIndex: Int? {
-        lines.lastIndex { $0.startTime <= currentTimeMs && currentTimeMs < $0.endTime }
-            ?? lines.lastIndex { $0.startTime <= currentTimeMs }
-    }
-
-    private func progress(for line: LyricLine) -> Double {
-        guard line.endTime > line.startTime else { return currentTimeMs >= line.endTime ? 1 : 0 }
-        let raw = Double(currentTimeMs - line.startTime) / Double(line.endTime - line.startTime)
-        return min(max(raw, 0), 1)
+        lines.lastIndex { line in
+            if line.words.contains(where: { currentTimeMs >= $0.startTime && currentTimeMs < $0.endTime }) {
+                return true
+            }
+            guard let lastWord = line.words.last else { return false }
+            return currentTimeMs >= lastWord.startTime
+        }
     }
 
     var body: some View {
         ScrollViewReader { proxy in
             ZStack {
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 10) {
-                        Spacer().frame(height: 34)
+                    VStack(spacing: 8) {
+                        Spacer().frame(height: 14)
 
                         ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
                             let isActive = index == activeIndex
-                            let isPast: Bool = {
-                                guard let active = activeIndex else { return false }
-                                return index < active
-                            }()
 
                             LyricLineRow(
                                 line: line,
                                 isActive: isActive,
-                                isPast: isPast,
-                                progress: progress(for: line),
+                                currentTimeMs: currentTimeMs,
                                 onTap: { onTapLine(line) }
                             )
                             .id(line.id)
                         }
 
-                        Spacer().frame(height: 120)
+                        Spacer().frame(height: 64)
                     }
                 }
                 .scrollEdgeEffectStyle(.soft, for: .top)
@@ -635,7 +620,7 @@ struct SyncedLyricsView: View {
                     .allowsHitTesting(false)
                 }
             }
-            .padding(.horizontal, 6)
+            .padding(.horizontal, 12)
             .onAppear {
                 guard let idx = activeIndex, idx < lines.count else { return }
                 proxy.scrollTo(lines[idx].id, anchor: .center)
@@ -643,7 +628,7 @@ struct SyncedLyricsView: View {
             .onChange(of: activeIndex) { _, newIndex in
                 guard let idx = newIndex, idx < lines.count else { return }
                 guard isPlaying else { return }
-                withAnimation(.linear(duration: 0.2)) {
+                withAnimation(.smooth(duration: 0.12)) {
                     proxy.scrollTo(lines[idx].id, anchor: .center)
                 }
             }
@@ -654,65 +639,131 @@ struct SyncedLyricsView: View {
 private struct LyricLineRow: View {
     let line: LyricLine
     let isActive: Bool
-    let isPast: Bool
-    let progress: Double
+    let currentTimeMs: Int
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            ZStack {
-                Text(line.text)
-                    .font(isActive ? .title2.weight(.bold) : .title3.weight(.semibold))
-                    .foregroundStyle(baseColor)
+            VStack(spacing: 0) {
+                if line.words.isEmpty {
+                    Text(line.text)
+                        .font(isActive ? .callout.weight(.semibold) : .footnote.weight(.medium))
+                        .foregroundStyle(isActive ? .white : .white.opacity(0.55))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .frame(maxWidth: .infinity)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, isActive ? 7 : 5)
+                } else {
+                    WrappingHStack(horizontalSpacing: 3, verticalSpacing: 4) {
+                        ForEach(Array(line.words.enumerated()), id: \.element.id) { _, word in
+                            let isCurrentWord = currentTimeMs >= word.startTime && currentTimeMs < word.endTime
+                            let isPastWord = currentTimeMs >= word.endTime
+
+                            LyricWordToken(
+                                word: word,
+                                isCurrent: isCurrentWord,
+                                isPast: isPastWord,
+                                isActiveLine: isActive
+                            )
+                        }
+                    }
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity)
-
-                if isActive {
-                    GeometryReader { geo in
-                        Text(line.text)
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        .white,
-                                        Color(red: 0.88, green: 0.78, blue: 1.0)
-                                    ],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .multilineTextAlignment(.center)
-                            .lineLimit(2)
-                            .frame(maxWidth: .infinity)
-                            .mask(alignment: .leading) {
-                                Rectangle()
-                                    .frame(width: max(2, geo.size.width * progress))
-                            }
-                    }
-                    .allowsHitTesting(false)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, isActive ? 6 : 4)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, isActive ? 18 : 14)
             .background {
                 if isActive {
-                    Capsule(style: .continuous)
-                        .fill(.white.opacity(0.08))
-                        .padding(.horizontal, 16)
-                        .shadow(color: .white.opacity(0.1), radius: 8)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(.white.opacity(0.06))
+                        .padding(.horizontal, 6)
                 }
             }
-            .scaleEffect(isActive ? 1.01 : 1)
-            .animation(.easeOut(duration: 0.2), value: isActive)
+            .animation(.smooth(duration: 0.14), value: isActive)
             .contentShape(.rect(cornerRadius: 22))
         }
         .buttonStyle(.plain)
     }
+}
 
-    private var baseColor: Color {
-        if isActive { return .white.opacity(0.35) }
-        if isPast { return .white.opacity(0.20) }
-        return .white.opacity(0.42)
+private struct LyricWordToken: View {
+    let word: LyricWord
+    let isCurrent: Bool
+    let isPast: Bool
+    let isActiveLine: Bool
+
+    var body: some View {
+        Text(word.data)
+            .font(isCurrent ? .footnote.weight(.semibold) : .caption.weight(.medium))
+            .foregroundStyle(foregroundStyle)
+            .padding(.horizontal, isCurrent ? 4 : 2)
+            .padding(.vertical, isCurrent ? 2 : 1)
+            .background {
+                if isCurrent {
+                    Capsule(style: .continuous)
+                        .fill(.white.opacity(0.11))
+                }
+            }
+            .scaleEffect(isCurrent ? 1.03 : 1.0)
+            .animation(.spring(response: 0.22, dampingFraction: 0.88), value: isCurrent)
+    }
+
+    private var foregroundStyle: Color {
+        if isCurrent { return .white }
+        if isPast { return isActiveLine ? .white.opacity(0.72) : .white.opacity(0.48) }
+        return .white.opacity(0.38)
+    }
+}
+
+private struct WrappingHStack: Layout {
+    var horizontalSpacing: CGFloat = 4
+    var verticalSpacing: CGFloat = 4
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 320
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > width {
+                x = 0
+                y += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+
+            x += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
+        }
+
+        return CGSize(width: width, height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+
+            if x > bounds.minX, x + size.width > bounds.maxX {
+                x = bounds.minX
+                y += rowHeight + verticalSpacing
+                rowHeight = 0
+            }
+
+            subview.place(
+                at: CGPoint(x: x, y: y),
+                proposal: ProposedViewSize(width: size.width, height: size.height)
+            )
+
+            x += size.width + horizontalSpacing
+            rowHeight = max(rowHeight, size.height)
+        }
     }
 }

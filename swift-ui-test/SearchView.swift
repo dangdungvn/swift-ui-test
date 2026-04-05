@@ -219,14 +219,12 @@ struct SearchSongRow: View {
 
     var body: some View {
         Button {
-            Task {
-                await audioPlayer.play(song: PlayableSong(
-                    id: song.encodeId,
-                    title: song.title,
-                    artistsNames: song.artistsNames ?? "",
-                    thumbnail: song.thumbnailM ?? song.thumbnail ?? ""
-                ))
-            }
+            audioPlayer.play(song: PlayableSong(
+                id: song.encodeId,
+                title: song.title,
+                artistsNames: song.artistsNames ?? "",
+                thumbnail: song.thumbnailM ?? song.thumbnail ?? ""
+            ))
         } label: {
             HStack(spacing: 12) {
                 ZStack {

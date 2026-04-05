@@ -64,7 +64,7 @@ struct LyricSentence: Decodable, Identifiable {
     }
 }
 
-struct LyricWord: Decodable, Identifiable {
+struct LyricWord: Decodable, Identifiable, Equatable {
     let startTime: Int
     let endTime: Int
     let data: String
@@ -98,9 +98,11 @@ struct LyricLine: Identifiable, Equatable {
     let text: String
     let startTime: Int
     let endTime: Int
+    let words: [LyricWord]
 
     init(sentence: LyricSentence) {
         let words = sentence.words
+        self.words = words
         self.text = words
             .map { $0.data.trimmingCharacters(in: .whitespacesAndNewlines) }
             .joined(separator: " ")

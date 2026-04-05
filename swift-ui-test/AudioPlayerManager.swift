@@ -18,8 +18,9 @@ class AudioPlayerManager {
 
     private var player: AVPlayer?
     private var timeObserverToken: Any?
-    private var lastPlaybackActionAt: Date = .distantPast
-    private let playbackActionCooldown: TimeInterval = 0.25
+    private var pendingPlayRequestID: UUID?
+    private var shouldPlayWhenReady = false
+    private var playbackTask: Task<Void, Never>?
 
     private init() {
         setupAudioSession()
@@ -38,8 +39,12 @@ class AudioPlayerManager {
         try? AVAudioSession.sharedInstance().setActive(true)
     }
 
-    func play(song: PlayableSong) async {
-        guard !isLoading else { return }
+    func play(song: PlayableSong) {
+        let requestID = UUID()
+        pendingPlayRequestID = requestID
+        shouldPlayWhenReady = true
+
+        playbackTask?.cancel()
 
         if currentSong?.id == song.id, isPlaying {
             pause()
@@ -50,17 +55,33 @@ class AudioPlayerManager {
         currentSongInfo = nil
         currentLyric = nil
         isLoading = true
-        isPlaying = false
+        isPlaying = true
         errorMessage = nil
         currentTime = 0
         duration = 0
 
+        playbackTask = Task { [weak self] in
+            guard let self else { return }
+            await self.loadSong(song, requestID: requestID)
+        }
+    }
+
+    private func loadSong(_ song: PlayableSong, requestID: UUID) async {
+        defer {
+            if pendingPlayRequestID == requestID {
+                isLoading = false
+            }
+        }
+
         do {
             let streaming: SongStreamingData = try await APIClient.shared.fetch(.song(id: song.id))
+            guard pendingPlayRequestID == requestID, !Task.isCancelled else { return }
+
             guard let urlString = streaming.bestURL,
                   let url = URL(string: urlString) else {
                 errorMessage = "Khong tim thay link phat"
                 isLoading = false
+                isPlaying = false
                 return
             }
 
@@ -71,9 +92,19 @@ class AudioPlayerManager {
                 player?.replaceCurrentItem(with: playerItem)
             }
             installTimeObserverIfNeeded()
-            player?.play()
+            if shouldPlayWhenReady {
+                player?.play()
+                isPlaying = true
+            } else {
+                player?.pause()
+                isPlaying = false
+            }
 
-            if let info: SongInfo = try? await APIClient.shared.fetch(.infoSong(id: song.id)) {
+            async let infoTask: SongInfo? = try? APIClient.shared.fetch(.infoSong(id: song.id))
+            async let lyricTask: SongLyric? = try? APIClient.shared.fetch(.lyric(id: song.id))
+
+            if let info = await infoTask {
+                guard pendingPlayRequestID == requestID, !Task.isCancelled else { return }
                 currentSongInfo = info
                 duration = Double(info.duration ?? 0)
                 currentSong = PlayableSong(
@@ -84,36 +115,32 @@ class AudioPlayerManager {
                 )
             }
 
-            if let lyric: SongLyric = try? await APIClient.shared.fetch(.lyric(id: song.id)) {
+            if let lyric = await lyricTask {
+                guard pendingPlayRequestID == requestID, !Task.isCancelled else { return }
                 currentLyric = lyric
             }
-            isPlaying = true
-            isLoading = false
+            isPlaying = shouldPlayWhenReady
         } catch {
+            guard pendingPlayRequestID == requestID, !Task.isCancelled else { return }
             errorMessage = error.localizedDescription
+            isPlaying = false
             isLoading = false
         }
     }
 
     func pause() {
-        guard !isLoading else { return }
+        shouldPlayWhenReady = false
         player?.pause()
         isPlaying = false
     }
 
     func resume() {
-        guard !isLoading else { return }
+        shouldPlayWhenReady = true
         player?.play()
         isPlaying = true
     }
 
     func togglePlayPause() {
-        guard !isLoading else { return }
-
-        let now = Date()
-        guard now.timeIntervalSince(lastPlaybackActionAt) >= playbackActionCooldown else { return }
-        lastPlaybackActionAt = now
-
         if isPlaying {
             pause()
         } else {
@@ -122,6 +149,8 @@ class AudioPlayerManager {
     }
 
     func stop() {
+        playbackTask?.cancel()
+        playbackTask = nil
         player?.pause()
         player?.replaceCurrentItem(with: nil)
         isPlaying = false
@@ -133,7 +162,8 @@ class AudioPlayerManager {
         isLoading = false
         currentTime = 0
         duration = 0
-        lastPlaybackActionAt = .distantPast
+        pendingPlayRequestID = nil
+        shouldPlayWhenReady = false
     }
 
     func presentSongDetail() {
@@ -161,16 +191,18 @@ class AudioPlayerManager {
     private func installTimeObserverIfNeeded() {
         guard timeObserverToken == nil, let player else { return }
 
-        let interval = CMTime(seconds: 0.25, preferredTimescale: 600)
+        let interval = CMTime(seconds: 0.01, preferredTimescale: 600)
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self else { return }
-            self.currentTime = time.seconds.isFinite ? time.seconds : 0
+            Task { @MainActor in
+                self.currentTime = time.seconds.isFinite ? time.seconds : 0
 
-            if self.duration <= 0,
-               let itemDuration = self.player?.currentItem?.duration.seconds,
-               itemDuration.isFinite,
-               itemDuration > 0 {
-                self.duration = itemDuration
+                if self.duration <= 0,
+                   let itemDuration = self.player?.currentItem?.duration.seconds,
+                   itemDuration.isFinite,
+                   itemDuration > 0 {
+                    self.duration = itemDuration
+                }
             }
         }
     }
