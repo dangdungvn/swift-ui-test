@@ -18,6 +18,8 @@ class AudioPlayerManager {
 
     private var player: AVPlayer?
     private var timeObserverToken: Any?
+    private var lastPlaybackActionAt: Date = .distantPast
+    private let playbackActionCooldown: TimeInterval = 0.25
 
     private init() {
         setupAudioSession()
@@ -37,6 +39,8 @@ class AudioPlayerManager {
     }
 
     func play(song: PlayableSong) async {
+        guard !isLoading else { return }
+
         if currentSong?.id == song.id, isPlaying {
             pause()
             return
@@ -92,16 +96,24 @@ class AudioPlayerManager {
     }
 
     func pause() {
+        guard !isLoading else { return }
         player?.pause()
         isPlaying = false
     }
 
     func resume() {
+        guard !isLoading else { return }
         player?.play()
         isPlaying = true
     }
 
     func togglePlayPause() {
+        guard !isLoading else { return }
+
+        let now = Date()
+        guard now.timeIntervalSince(lastPlaybackActionAt) >= playbackActionCooldown else { return }
+        lastPlaybackActionAt = now
+
         if isPlaying {
             pause()
         } else {
@@ -121,6 +133,7 @@ class AudioPlayerManager {
         isLoading = false
         currentTime = 0
         duration = 0
+        lastPlaybackActionAt = .distantPast
     }
 
     func presentSongDetail() {

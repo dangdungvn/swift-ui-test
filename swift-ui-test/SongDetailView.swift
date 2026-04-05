@@ -432,6 +432,8 @@ struct SongDetailView: View {
                 .frame(width: 68, height: 68)
                 .glassEffect(.regular.tint(.white.opacity(0.1)).interactive(), in: .circle)
             }
+            .buttonStyle(.plain)
+            .disabled(audioPlayer.isLoading)
 
             Button {} label: {
                 Image(systemName: "forward.fill")

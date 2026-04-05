@@ -21,14 +21,22 @@ struct ContentView: View {
         .tint(.white)
         .tabBarMinimizeBehavior(.onScrollDown)
         .toolbarBackgroundVisibility(.visible, for: .tabBar)
-        .tabViewBottomAccessory {
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             if audioPlayer.currentSong != nil {
-                NowPlayingBar(audioPlayer: audioPlayer)
-                    .onTapGesture {
-                        audioPlayer.presentSongDetail()
-                    }
+                VStack(spacing: 0) {
+                    NowPlayingBar(audioPlayer: audioPlayer)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .glassEffect(.regular.tint(.white.opacity(0.05)).interactive(), in: .rect(cornerRadius: 22))
+                        .padding(.horizontal, 16)
+
+                    Color.clear
+                        .frame(height: 56)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
+        .animation(.snappy(duration: 0.25), value: audioPlayer.currentSong?.id)
         .fullScreenCover(isPresented: $audioPlayer.isSongDetailPresented) {
             SongDetailView()
                 .preferredColorScheme(.dark)
@@ -44,31 +52,48 @@ struct NowPlayingBar: View {
     var body: some View {
         if let song = audioPlayer.currentSong {
             HStack(spacing: 10) {
-                MediaArtworkView(url: song.thumbnail, cornerRadius: 8)
-                    .frame(width: 36, height: 36)
+                Button {
+                    audioPlayer.presentSongDetail()
+                } label: {
+                    HStack(spacing: 10) {
+                        MediaArtworkView(url: song.thumbnail, cornerRadius: 10)
+                            .frame(width: 30, height: 30)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(song.title)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(song.title)
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
 
-                    Text(song.artistsNames)
-                        .font(.caption2)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .lineLimit(1)
+                            Text(song.artistsNames)
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.6))
+                                .lineLimit(1)
+                        }
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
 
-                Spacer()
+                Spacer(minLength: 8)
 
                 Button {
                     audioPlayer.togglePlayPause()
                 } label: {
-                    Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 32, height: 32)
+                    if audioPlayer.isLoading {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(0.8)
+                            .frame(width: 28, height: 28)
+                    } else {
+                        Image(systemName: audioPlayer.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 28, height: 28)
+                    }
                 }
+                .buttonStyle(.plain)
+                .disabled(audioPlayer.isLoading)
 
                 Button {
                     audioPlayer.stop()
@@ -76,12 +101,14 @@ struct NowPlayingBar: View {
                     Image(systemName: "xmark")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.white.opacity(0.6))
-                        .frame(width: 28, height: 28)
+                        .frame(width: 24, height: 24)
                 }
+                .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
             .contentShape(Rectangle())
+            .transaction { transaction in
+                transaction.animation = nil
+            }
         }
     }
 }
